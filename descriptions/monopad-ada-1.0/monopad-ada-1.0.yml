@@ -1,0 +1,1363 @@
+openapi: 3.0.0
+info:
+  title: Monopad API
+  description: OpenAPI 3.0.0 definition for Monopad applications and remote modules (monopods). Any endpoint (except /node) may return 403 (Forbidden), 404 (Not found) or 500 (Internal server error) if the operation is blocked or not supported. 404 (Not found) may always be used instead of 403 (Forbidden) to hide access control rules to the client.
+  version: "1.0"
+  
+  
+servers:
+- url: 'https://api.example.com'
+  
+  
+tags:
+- name: node
+  description: "Node operations"
+- name: case
+  description: "Case operations"
+- name: component
+  description: "Component operations"
+- name: relation
+  description: "Relation operations"
+  
+  
+paths:
+  /node:
+    get:
+      tags:
+      - "node"
+      summary: Returns the node information.
+      description: Returns the node information. This endpoint must always return a successful response (2xx) with the required node fields to be accepted as a Monopad application and/or remote module (monopods).
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Node'
+                
+                
+  /node/configure:
+    post:
+      tags:
+      - "node"
+      summary: Configures the node.
+      description: Requests the node to reconfigure with the given configuration. Any omitted field should be treated as unchanged. The UUID of the node must not change during reconfiguration.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/Summarized'
+              - $ref: '#/components/schemas/Configured'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Node'
+        '403':
+          description: Forbidden. May be used if the configuration is not allowed.
+  
+  
+  /node/invoke/{action}:
+    post:
+      tags:
+      - "node"
+      summary: Invokes a node function.
+      description: Requests the node to execute a function with the provided arguments. Any result from the function is returned when the function completes.
+      parameters:
+      - in: path
+        name: action
+        required: true
+        schema:
+          type: string
+          pattern: "^[a-zA-Z_][a-zA-Z0-9_]*$"
+        description: Action name.
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: {}
+        '404':
+          description: Not found. May be used if the action is not found.
+        '403':
+          description: Forbidden. May be used if invokation is not allowed.
+          
+          
+  /node/metrics:
+    get:
+      tags:
+      - "node"
+      summary: Return node metrics.
+      description: |
+        Requests the node send metrics for its internal processes. Metric entities must use the following labels to be identified correctly: \
+        **case** - Case alias or UUID \
+        **component** - Component alias or UUID \
+        **port** - Port alias or UUID \
+        Case metrics must always be labeled with the case UUID.
+        Component metrics must always be labeled with the case and component UUID.
+        Port metrics must always be labeled with the case, component and port UUID.
+      responses:
+        '200':
+          description: OpenMetrics summary for internal processes.
+          content:
+            application/openmetrics-text:
+              schema: {}
+              example: |
+                # HELP meows Heard around the house.
+                # TYPE meows counter
+                meows_total{case="_MeowDetector", component="Buffy"} 3
+                meows_created{cat="Buffy"} 1662320144
+                meows_total{case="_MeowDetector", component="Billy"} 1
+                meows_created{cat="Billy"} 1662320144
+        '404':
+          description: Not found. May be used if the action is not found.
+        '403':
+          description: Forbidden. May be used if invokation is not allowed.
+          
+          
+  /cases:
+    get:
+      tags:
+      - "case"
+      summary: Returns the available cases from the node.
+      description: Returns the available cases from the node. The component hierarchy of the case is only required to show a depth up the given depth value (0 = do now show root component). If the depth is larger than zero then at least the root component must be shown. 
+      parameters:
+      - in: query
+        name: depth
+        required: false
+        schema:
+          type: integer
+        description: Requested hierarchy depth.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Case'
+    post:
+      tags:
+      - "case"
+      summary: Adds a case to the node.
+      description: Attempts to add a case using the provided case configuration. If the case is added then the actual (possibly corrected) case is returned.
+      requestBody:
+        content:
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/CaseConfiguration'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Case'
+        '403':
+          description: Forbidden. May be used if adding a case is not allowed.
+          
+      
+  /cases/templates:
+    get:
+      tags:
+      - "case"
+      summary: Returns the available templates for cases.
+      description: Returns an array of templates that are available to add as cases to the node.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CaseTemplate'
+        '404':
+          description: Not found. May be used if the component is not found, or if no templates are available.
+                  
+                  
+  /cases/{case}:
+    get:
+      tags:
+      - "case"
+      summary: Returns information of case with the given UUID or alias.
+      description: Returns case information, and information about its component hierarchy. The component hierarchy of the case is only required to show a depth up the given depth value (0 = do now show root component). If the depth is larger than zero then at least the root component must be shown. 
+      parameters:
+      - in: path
+        name: case
+        required: true
+        schema:
+          oneOf:
+           - $ref: '#/components/schemas/Alias'
+           - $ref: '#/components/schemas/UUID'
+      - in: query
+        name: depth
+        required: false
+        schema:
+          type: integer
+        description: Requested hierarchy depth.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Case'
+        '404':
+          description: Not found. May be used if the case is not found.
+    delete:
+      tags:
+      - "case"
+      summary: Deletes a case with the given UUID or alias from the node.
+      description: Attempts to delete a case. Any sucessful response (2xx) indicates that the delete operation was accepted.
+      parameters:
+      - in: path
+        name: case
+        required: true
+        schema:
+          oneOf:
+           - $ref: '#/components/schemas/Alias'
+           - $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Not found. May be used if the case is not found.
+        '403':
+          description: Forbidden. May be used if adding a case is not allowed.
+   
+                
+  /cases/{case}/configure:
+    post:
+      tags:
+      - "case"
+      summary: Configures the case with the given UUID or alias.
+      description: Requests the case to reconfigure with the given configuration. Any omitted field should be treated as unchanged. The UUID of the node must not change during reconfiguration. 
+      parameters:
+      - in: path
+        name: case
+        required: true
+        schema:
+          oneOf:
+           - $ref: '#/components/schemas/Alias'
+           - $ref: '#/components/schemas/UUID'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/Summarized'
+              - $ref: '#/components/schemas/Configured'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Case'
+        '404':
+          description: Not found. May be used if the case is not found.
+        '403':
+          description: Forbidden. May be used if the configuration is not allowed.
+          
+          
+  /cases/{case}/invoke/{action}:
+    post:
+      tags:
+      - "case"
+      summary: Invokes a case function.
+      description: Requests the case to execute a function with the provided arguments. Any result from the function is returned when the function completes.
+      parameters:
+      - in: path
+        name: case
+        required: true
+        schema:
+          oneOf:
+           - $ref: '#/components/schemas/Alias'
+           - $ref: '#/components/schemas/UUID'
+      - in: path
+        name: action
+        required: true
+        schema:
+          type: string
+          pattern: "^[a-zA-Z_][a-zA-Z0-9_]*$"
+        description: Action name.
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: {}
+        '404':
+          description: Not found. May be used if the case or action is not found.
+        '403':
+          description: Forbidden. May be used if invokation is not allowed.
+          
+          
+  /cases/{case}/persist:
+    get:
+      tags:
+      - "case"
+      summary: Persists the case with the given UUID or alias.
+      description: Requests the node to persist the case with the given identity. Any sucessful response (2xx) indicates that the persist operation was accepted.
+      parameters:
+      - in: path
+        name: case
+        required: true
+        schema:
+          oneOf:
+           - $ref: '#/components/schemas/Alias'
+           - $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Not found. May be used if the case is not found.
+        '403':
+          description: Forbidden. May be used if the configuration is not allowed.
+          
+          
+  /cases/{case}/{component}:
+    get:
+      tags:
+      - "component"
+      summary: Returns information of the component with the given UUID or alias.
+      description: Returns component information, and information about its hierarchy. The returned component information is only required to show a hierarchy up the given depth (0 = do not show children). If depth is larger than zero then at least the direct children of the component must be shown.
+      parameters:
+        - in: path
+          name: case
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+        - in: path
+          name: component
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+        - in: query
+          name: depth
+          required: false
+          schema:
+            type: integer
+          description: Requested hierarchy depth.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Component'
+        '404':
+          description: Not found. May be used if the component is not found.
+    post:
+      tags:
+      - "component"
+      summary: Adds a child to the component.
+      description: Attempts to add a child to a component using the provided component configuration. If the component is added then the actual (possibly corrected) component is returned.
+      parameters:
+        - in: path
+          name: case
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+        - in: path
+          name: component
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+      requestBody:
+        content:
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/ComponentConfiguration'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Component'
+        '404':
+          description: Not found. May be used if the component is not found.
+        '403':
+          description: Forbidden. May be used if adding a case is not allowed.
+    delete:
+      tags:
+      - "component"
+      summary: Deletes a child with the given UUID or alias from its parent(s).
+      description: Attempts to delete a child component. If there are multiple parents to the component then the default behavior is that the component is removed from all parents. Any sucessful response (2xx) indicates that the delete operation was accepted.
+      parameters:
+      - in: path
+        name: case
+        required: true
+        schema:
+          oneOf:
+           - $ref: '#/components/schemas/Alias'
+           - $ref: '#/components/schemas/UUID'
+      - in: path
+        name: component
+        required: true
+        schema:
+          oneOf:
+           - $ref: '#/components/schemas/Alias'
+           - $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Not found. May be used if the component is not found.
+        '403':
+          description: Forbidden. May be used if adding a component is not allowed.
+          
+          
+  /cases/{case}/{component}/activate:
+    get:
+      tags:
+      - "component"
+      summary: Activates the component with the given UUID or alias.
+      description: Requests the component with the given identity to activate. Any sucessful response (2xx) indicates that the activate operation was accepted.
+      parameters:
+        - in: path
+          name: case
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+        - in: path
+          name: component
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Not found. May be used if the component is not found.
+        '403':
+          description: Forbidden. May be used if activating the component is not allowed.
+          
+          
+  /cases/{case}/{component}/inactivate:
+    get:
+      tags:
+      - "component"
+      summary: Inactivates the component with the given UUID or alias.
+      description: Requests the component with the given identity to inactivate. Any sucessful response (2xx) indicates that the inactivate operation was accepted.
+      parameters:
+        - in: path
+          name: case
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+        - in: path
+          name: component
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Not found. May be used if the component is not found.
+        '403':
+          description: Forbidden. May be used if inactivating the component is not allowed.
+          
+          
+  /cases/{case}/{component}/path:
+    get:
+      tags:
+      - "component"
+      summary: Returns the shortest path to the component with given UUID or alias.
+      description: Returns an array of UUIDs that represents the shortest path from the root component to the component with the given identity, if present. The first UUID in the array is the root component and the last UUID is the requested component. 
+      parameters:
+        - in: path
+          name: case
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+        - in: path
+          name: component
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UUID'
+        '404':
+          description: Not found. May be used if the component is not found.
+          
+          
+  /cases/{case}/{component}/reset:
+    get:
+      tags:
+      - "component"
+      summary: Resets the component with the given UUID or alias.
+      description: Requests the component with the given identity to reset to its original state. Any sucessful response (2xx) indicates that the inactivate operation was accepted.
+      parameters:
+        - in: path
+          name: case
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+        - in: path
+          name: component
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Not found. May be used if the component is not found.
+        '403':
+          description: Forbidden. May be used if resetting the component is not allowed.
+          
+          
+  /cases/{case}/{component}/templates:
+    get:
+      tags:
+      - "component"
+      summary: Returns the available templates for child components.
+      description: Returns an array of templates that are available to add as children to the component with the given UUID or alias.
+      parameters:
+        - in: path
+          name: case
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+        - in: path
+          name: component
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ComponentTemplate'
+        '404':
+          description: Not found. May be used if the component is not found, or if no templates are available.
+          
+          
+  /cases/{case}/{component}/configure:
+    post:
+      tags:
+      - "component"
+      summary: Configures the component with the given UUID or alias.
+      description: Requests the given component to reconfigure with the given configuration. Any omitted field should be treated as unchanged. The UUID of the component must not change during reconfiguration. 
+      parameters:
+        - in: path
+          name: case
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+        - in: path
+          name: component
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/Summarized'
+              - $ref: '#/components/schemas/Configured'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Component'
+        '404':
+          description: Not found. May be used if the component is not found.
+        '403':
+          description: Forbidden. May be used if the configuration is not allowed.
+          
+  
+  /cases/{case}/{component}/relate:
+    post:
+      tags:
+      - "relation"
+      summary: Adds a relation to the component with the given UUID or alias.
+      description: Requests the given component to add a relation. If the relation is added then the actual (possibly corrected) relation is returned.
+      parameters:
+        - in: path
+          name: case
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+        - in: path
+          name: component
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Relation'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Relation'
+        '404':
+          description: Not found. May be used if the component is not found.
+        '403':
+          description: Forbidden. May be used if adding the relation is not allowed.
+          
+          
+  /cases/{case}/{component}/unrelate/{relation}:
+    delete:
+      tags:
+      - "relation"
+      summary: Deletes a relation with the given UUID or alias from a component.
+      description: Attempts to delete a relation. Any sucessful response (2xx) indicates that the delete operation was accepted.
+      parameters:
+        - in: path
+          name: case
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+        - in: path
+          name: component
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+        - in: path
+          name: relation
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Not found. May be used if the relation is not found.
+        '403':
+          description: Forbidden. May be used if removing the relation is not allowed.
+          
+  
+  /cases/{case}/{component}/invoke/{action}:
+    post:
+      tags:
+      - "component"
+      summary: Invokes a component function.
+      description: Requests the component to execute a function with the provided arguments. Any result from the function is returned when the function completes.
+      parameters:
+      - in: path
+        name: case
+        required: true
+        schema:
+          oneOf:
+           - $ref: '#/components/schemas/Alias'
+           - $ref: '#/components/schemas/UUID'
+      - in: path
+        name: component
+        required: true
+        schema:
+          oneOf:
+           - $ref: '#/components/schemas/Alias'
+           - $ref: '#/components/schemas/UUID'
+      - in: path
+        name: action
+        required: true
+        schema:
+          type: string
+          pattern: "^[a-zA-Z_][a-zA-Z0-9_]*$"
+        description: Action name.
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: {}
+        '404':
+          description: Not found. May be used if the component or action is not found.
+        '403':
+          description: Forbidden. May be used if invokation is not allowed.
+          
+          
+  /cases/{case}/{component}/view/**:
+    get:
+      tags:
+      - "component"
+      summary: Sends a get call to the component server.
+      description: Sends a get call to the underlying server for the component with the given UUID or alias.
+      parameters:
+      - in: path
+        name: case
+        required: true
+        schema:
+          oneOf:
+           - $ref: '#/components/schemas/Alias'
+           - $ref: '#/components/schemas/UUID'
+      - in: path
+        name: component
+        required: true
+        schema:
+          oneOf:
+           - $ref: '#/components/schemas/Alias'
+           - $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: Server specific response. Content type and data depends on application.
+        '404':
+          description: Not found. May be used if the component or resource is not found.
+        '403':
+          description: Forbidden. May be used if post call is not allowed.
+    post:
+      tags:
+      - "component"
+      summary: Sends a post call to the component server.
+      description: Sends a post call to the underlying server for the component with the given UUID or alias.
+      parameters:
+      - in: path
+        name: case
+        required: true
+        schema:
+          oneOf:
+           - $ref: '#/components/schemas/Alias'
+           - $ref: '#/components/schemas/UUID'
+      - in: path
+        name: component
+        required: true
+        schema:
+          oneOf:
+           - $ref: '#/components/schemas/Alias'
+           - $ref: '#/components/schemas/UUID'
+      requestBody:
+        description: Server specific request. Content type and data depends on application.
+        content:
+          any/any:
+            schema: {}
+      responses:
+        '200':
+          description: Server specific response. Content type and data depends on application.
+        '404':
+          description: Not found. May be used if the component or resource is not found.
+        '403':
+          description: Forbidden. May be used if post call is not allowed.
+    put:
+      tags:
+      - "component"
+      summary: Sends a put call to the component server.
+      description: Sends a put call to the underlying server for the component with the given UUID or alias.
+      parameters:
+      - in: path
+        name: case
+        required: true
+        schema:
+          oneOf:
+           - $ref: '#/components/schemas/Alias'
+           - $ref: '#/components/schemas/UUID'
+      - in: path
+        name: component
+        required: true
+        schema:
+          oneOf:
+           - $ref: '#/components/schemas/Alias'
+           - $ref: '#/components/schemas/UUID'
+      requestBody:
+        description: Server specific request. Content type and data depends on application.
+        content:
+          any/any:
+            schema: {}
+      responses:
+        '200':
+          description: Server specific response. Content type and data depends on application.
+        '404':
+          description: Not found. May be used if the component or resource is not found.
+        '403':
+          description: Forbidden. May be used if post call is not allowed.
+    delete:
+      tags:
+      - "component"
+      summary: Sends a delete call to the component server.
+      description: Sends a delete call to the underlying server for the component with the given UUID or alias. Any sucessful response (2xx) indicates that the delete operation was accepted.
+      parameters:
+      - in: path
+        name: case
+        required: true
+        schema:
+          oneOf:
+           - $ref: '#/components/schemas/Alias'
+           - $ref: '#/components/schemas/UUID'
+      - in: path
+        name: component
+        required: true
+        schema:
+          oneOf:
+           - $ref: '#/components/schemas/Alias'
+           - $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Not found. May be used if the component or resource is not found.
+        '403':
+          description: Forbidden. May be used if post call is not allowed.
+    
+          
+          
+components:
+  schemas:
+    Primitive:
+      description: Any JSON value allowed (number, integer, boolean, object, array, null).
+      
+    UUID:
+      description: A universal unique identity. The convention is to use a UUID of version 1, 2 or 4. Alternatively a version 3 or 5 can be used with a namespace name-based input that contains some random salt from a UUID of version 1, 2 or 4.
+      type: string
+      pattern: "^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$"
+      
+      
+    Alias:
+      description: An alias for an entity. The alias acts as a complement to a UUID to simplify frequent interaction with an entity.
+      type: string
+      pattern: "^_[\\w-\\.]+$"
+      
+      
+    Description:
+      description: A textual description of an entity used to clarify its behavior. The description may contain content (e.g. using media type text/plain, text/markdown, ...) or point to an external resource using media type text/x-uri (single URI) or text/uri-list (list of URIs).
+      type: object
+      required:
+        - text
+      properties:
+        text: 
+          type: string
+        mime: 
+          type: string
+          description: Default MIME is text/plain
+          
+          
+    Property:
+      description: A property name. The convention is to use Snake case (stylized as snake_case) due to fast eye tracking (Sharif B., & Maletic J. I. (2010)) and simple word parsing. 
+      type: string
+      pattern: "^[a-zA-Z_][\\w\\.\\-]*$"
+      
+      
+    Label:
+      description: A label used to associate a human and machine readable property with some value.
+      type: object
+      required:
+        - name
+      properties:
+        name: 
+          $ref: '#/components/schemas/Property'
+        description:
+          $ref: '#/components/schemas/Description'
+        value:
+          $ref: '#/components/schemas/Primitive'
+          
+          
+    Labeled:
+      description: An entity associated with a set of labels.
+      type: object
+      properties:
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/Label'
+            
+            
+    Summarized:
+      description: A labeled entity associated with an optional name, alias and description.
+      allOf:
+        - $ref: '#/components/schemas/Labeled'
+        - type: object
+          properties:
+            name:
+              type: string
+            alias:
+              $ref: '#/components/schemas/Alias'
+            description:
+              $ref: '#/components/schemas/Description'
+              
+              
+    Identifiable:
+      description: A living (or peristed) summarized entity identified with a UUID.
+      allOf:
+        - $ref: '#/components/schemas/Summarized'
+        - type: object
+          properties:
+            uuid: 
+              $ref: '#/components/schemas/UUID'
+              
+    Typed:
+      description: A typed entity.
+      type: object
+      properties:
+        type:
+          description: The entity type.
+          type: string
+        factory:
+          description: A preferred factory for which the type is defined.
+          type: string
+        dro:
+          description: The dependency-resolution order. If multiple typed entity should be created then they must be created in the ascending order in respect to the dependency-resolution order.
+          type: integer
+          
+    Persistable:
+      description: A living that may or may not be persisted to a non-living medium.
+      type: object
+      properties:
+        persisted:
+          description: Specifies whether the persistable entity has been persisted since the last modification. If the property is missing then it is assumed that the entity does not support tracking of internal modifications.
+          type: boolean
+        transient:
+          description: Specifies whether the persistable entity is transient and therefore cannot be persisted or provide a configuration.
+          type: boolean
+              
+              
+    Constraint:
+      description: |
+        A constraint on a value. The "value" field of the constraint provides additional information of the constraint and depends on the type: \
+        **any** - Any value allowed. No constraint value required, but may be string containing human readable text. \
+        **readonly** - No value allowed. No constraint value required, but may be string containing human readable text. \
+        **string** - Any string allowed. No constraint value required, but may be string containing human readable text. \
+        **number** - Any number allowed. No constraint value required, but may be string containing human readable text. \
+        **boolean** - True/False allowed. No constraint value required, but may be string containing human readable text. \
+        **or** - Value is allowed only if it is allowed by any subconstraint. Constraint value is array of two or more subconstraints. \
+        **and** - Value is allowed only if it is allowed by all subconstraints. Constraint value is array of two or more subconstraints. \
+        **not** - Value is allowed only if is not allowed by the subconstraint. Constraint value is subconstraint. \
+        **oneof** - Value is allowed only if it maches an element in the constraint value. Constraint value is array of accepted constants. \
+        **arrayof** - Value is allowed only if it is an array where each element is accepted by the subconstraint. Constraint value is subconstraint. \
+        **schema** - Value is allowed only if it matches the given JSON schema. Constraint value is URL to JSON schema, or value is JSON schema. \
+        **pattern** - Value is allowed only if it matches the given regular expression. Contraint value is string representing regular expression. \
+        **integer** - Value is allowed only if it is an integer. No constraint value required, but may be string containing human readable text. \
+        **interval** - Value is allowed only if it is a number within the given interval. Contraint value is object containing properties "min", "max" and "open". Min and max specifies the endpoints of the interval and open specifies whether the interval is open (true) or closed (false).
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          enum: 
+            - "any"
+            - "readonly"
+            - "string"
+            - "number"
+            - "boolean"
+            - "or"
+            - "and"
+            - "not"
+            - "oneof"
+            - "arrayof"
+            - "schema"
+            - "pattern"
+            - "integer"
+            - "interval"
+        value: {}
+        
+        
+    Configured:
+      description: A configued entity.
+      type: object
+      properties:
+        properties:
+          type: object
+          description: Key must be a valid Property.
+          additionalProperties:
+                $ref: '#/components/schemas/Primitive'
+                
+                
+    Configurable:
+      description: A configurable entity.
+      allOf:
+        - $ref: '#/components/schemas/Configured'
+        - type: object
+          properties:
+            constraints:
+              description: Specifies the constraints on the entity's properties. Key must be a valid Property.
+              type: object
+              additionalProperties:
+                    $ref: '#/components/schemas/Constraint'
+            descriptions:
+              description: Specifies the descriptions on the entity's properties. Key must be a valid Property.
+              type: object
+              additionalProperties:
+                    $ref: '#/components/schemas/Description'
+                    
+                    
+    Action:
+      description: An action that can be invoked on a living entity. The "returns" constraint provides information on the return value of the action (if any).
+      type: object
+      required:
+        - name
+        - arguments
+      properties:
+        name:
+          type: string
+          pattern: "^[a-zA-Z_][a-zA-Z0-9_]*$"
+        description:
+          $ref: '#/components/schemas/Description'
+        returns:
+          $ref: '#/components/schemas/Constraint'
+        arguments:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                description: The argument name.
+                type: string
+              description:
+                $ref: '#/components/schemas/Description'
+              constraint: 
+                $ref: '#/components/schemas/Constraint'
+                
+                
+    Functional:
+      description: A living entity with actions.
+      type: object
+      properties:
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Action'
+            
+            
+    Layout:
+      required:
+      - type
+      allOf:
+        - $ref: '#/components/schemas/Configurable'
+        - type: object
+          properties:
+            type:
+              type: string
+              
+              
+    Graphical:
+      type: object
+      properties:
+        graphics:
+          type: object
+          description: Key must be a valid Property.
+          additionalProperties:
+            $ref: '#/components/schemas/Primitive'
+        layout:
+          $ref: '#/components/schemas/Layout'
+          
+          
+    Bridge:
+      description: |
+        A bridge used to transport data items to/from an entity. Bridge properties is associated to the bridge type. Required values are: \
+        **http** - **url**: HTTP URL (only synchronous communication) (string).  \
+        **http** - **url**: HTTPS URL (only synchronous communication) (string).  \
+        **ssl** - **host**: ip/hostname (string), **port**: tcp port (integer 0-65535). \
+        **tcp** - **host**: ip/hostname (string), **port**: tcp port (integer 0-65535). \
+        **ws** - **url**: WebSocket URL (string). \
+        **wss** - **url**: WebSocket Secure URL (string).
+      required:
+      - properties
+      - type
+      - format
+      allOf:
+        - $ref: '#/components/schemas/Configured'
+        - type: object
+          properties:
+            type: 
+              type: string
+              enum:
+                - http
+                - https
+                - ssl
+                - tcp
+                - ws
+                - wss
+            format:
+              type: string
+              enum:
+                  - json
+                  - protobuf
+                  - xml
+                  - asn1
+                  
+                  
+    Port:
+      allOf:
+        - $ref: '#/components/schemas/Identifiable'
+        - type: object
+          properties:
+            input:
+              type: boolean
+              description: Default is false
+            output:
+              type: boolean
+              description: Default is false
+            content:
+              type: array
+              items:
+                type: string
+                
+                
+    Relation:
+      required:
+      - type
+      - originator
+      - destination
+      allOf:
+        - $ref: '#/components/schemas/Identifiable'
+        - type: object
+          properties:
+            type:
+              type: string
+              enum:
+                  - aggregation
+                  - association
+                  - directed
+                  - bidirectional
+                  - composition
+                  - containment
+                  - dependency
+                  - generalization
+                  - multiplicity
+                  - realization
+            originator:
+              type: object
+              required:
+                - component
+              properties:
+                component:
+                  $ref: '#/components/schemas/UUID'
+                port:
+                  $ref: '#/components/schemas/UUID'
+            destination:
+              type: object
+              required:
+                - component
+              properties:
+                component:
+                  $ref: '#/components/schemas/UUID'
+                port:
+                  $ref: '#/components/schemas/UUID'
+                  
+                  
+    Component:
+      required:
+      - uuid
+      allOf:
+        - $ref: '#/components/schemas/Identifiable'
+        - $ref: '#/components/schemas/Persistable'
+        - $ref: '#/components/schemas/Configurable'
+        - $ref: '#/components/schemas/Functional'
+        - $ref: '#/components/schemas/Graphical'
+        - type: object
+          properties:
+            active:
+              type: boolean
+            serving:
+              type: boolean
+            customizable:
+              type: boolean
+            ports:
+              type: array
+              items:
+                $ref: '#/components/schemas/Port'
+            children:
+              type: array
+              items:
+                $ref: '#/components/schemas/Component'
+            relations:
+              type: array
+              items:
+                $ref: '#/components/schemas/Relation'
+                
+                
+    Case:
+      required:
+      - uuid
+      allOf:
+        - $ref: '#/components/schemas/Identifiable'
+        - $ref: '#/components/schemas/Persistable'
+        - $ref: '#/components/schemas/Configurable'
+        - $ref: '#/components/schemas/Functional'
+        - type: object
+          properties:
+            root:
+              $ref: '#/components/schemas/Component'
+            bridges:
+              type: array
+              items:
+                $ref: '#/components/schemas/Bridge'
+                
+                
+    Node:
+      required:
+      - uuid
+      allOf:
+        - $ref: '#/components/schemas/Identifiable'
+        - $ref: '#/components/schemas/Configurable'
+        - $ref: '#/components/schemas/Functional'
+        - type: object
+          required:
+            - api
+            - system
+            - major
+            - minor
+          properties:
+            api:
+              type: string
+              enum: ["monopad-api"]
+            system:
+              type: string
+            major:
+              type: integer
+              enum: [3]
+            minor:
+              type: integer
+              enum: [0]
+              
+              
+    ComponentConfiguration:
+      allOf:
+        - $ref: '#/components/schemas/Identifiable'
+        - $ref: '#/components/schemas/Typed'
+        - $ref: '#/components/schemas/Configured'
+        - $ref: '#/components/schemas/Graphical'
+        - type: object
+          properties:
+            active:
+              type: boolean
+            ports:
+              type: array
+              items:
+                $ref: '#/components/schemas/Identifiable'
+            children:
+              type: array
+              items:
+                $ref: '#/components/schemas/ComponentConfiguration'
+            relations:
+              type: array
+              items:
+                $ref: '#/components/schemas/Relation'
+                
+                
+    CaseConfiguration:
+      allOf:
+        - $ref: '#/components/schemas/Identifiable'
+        - $ref: '#/components/schemas/Typed'
+        - $ref: '#/components/schemas/Configured'
+        - type: object
+          properties:
+            root:
+              $ref: '#/components/schemas/ComponentConfiguration'
+              
+              
+    ComponentTemplate:
+      allOf:
+        - $ref: '#/components/schemas/Summarized'
+        - $ref: '#/components/schemas/Typed'
+        - $ref: '#/components/schemas/Configurable'
+        - type: object
+          properties:
+            provider:
+              type: string
+            children:
+              type: array
+              items:
+                $ref: '#/components/schemas/ComponentConfiguration'
+                
+                
+    CaseTemplate:
+      allOf:
+        - $ref: '#/components/schemas/Summarized'
+        - $ref: '#/components/schemas/Typed'
+        - $ref: '#/components/schemas/Configurable'
+        - type: object
+          properties:
+            provider:
+              type: string
+            root:
+              $ref: '#/components/schemas/ComponentConfiguration'
+            
+              
+    DataItem:
+      allOf:
+        - $ref: '#/components/schemas/Labeled'
+        - type: object
+          properties:
+            provenance:
+              type: array
+              items:
+                $ref: '#/components/schemas/UUID'
+            content:
+              description: 'Base64 encoded binary content'
+              format: 'base64'
+              type: string
