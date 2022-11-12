@@ -1,3 +1,5 @@
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Actions Status](https://github.com/monopad/monopad-api/workflows/validate-openapi/badge.svg)](https://github.com/monopad/monopad-api/actions)
 # Monopad's REST API OpenAPI Description
 
 This repository contains [OpenAPI](https://www.openapis.org/) descriptions for Monopad's REST API.
