@@ -15,4 +15,4 @@ jobs:
     steps:
       - uses: actions/checkout@v2 # checkout repo content
       - name: Validate monopad-ada-1.0.yml
-        run: lint --skip-rule=no-ambiguous-paths --apis=monopad-ada-1.0.yml
+        run: openapi lint --skip-rule=no-ambiguous-paths --apis=monopad-ada-1.0.yml
