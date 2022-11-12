@@ -1,0 +1,18 @@
+name: validate-openapi
+
+on:
+  push:
+    branches: [ main ]
+    
+jobs:
+  Validate-OpenAPI-Descriptions:
+    runs-on: ubuntu-latest
+    container:
+      image: redocly/openapi-cli
+      volumes:
+        - $GITHUB_WORKSPACE/descriptions/monopad-ada-1.0:/spec
+      options: --cpus 1
+    steps:
+      - uses: actions/checkout@v2 # checkout repo content
+      - name: Validate monopad-ada-1.0.yml
+        run: lint --skip-rule=no-ambiguous-paths --apis=monopad-ada-1.0.yml
