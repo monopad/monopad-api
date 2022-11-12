@@ -10,7 +10,7 @@ jobs:
     container:
       image: redocly/openapi-cli
       volumes:
-        - $GITHUB_WORKSPACE/descriptions/monopad-ada-1.0:/spec
+        - ${{ github.workspace }}/descriptions/monopad-ada-1.0:/spec
       options: --cpus 1
     steps:
       - uses: actions/checkout@v2 # checkout repo content
