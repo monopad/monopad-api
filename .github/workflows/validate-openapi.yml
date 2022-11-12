@@ -9,10 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: redocly/openapi-cli
-      volumes:
-        - ${{ github.workspace }}/descriptions/monopad-ada-1.0:/spec
       options: --cpus 1
     steps:
       - uses: actions/checkout@v2 # checkout repo content
       - name: Validate monopad-ada-1.0.yml
-        run: openapi lint --skip-rule=no-ambiguous-paths --apis=monopad-ada-1.0.yml
+        run: openapi lint --skip-rule=no-ambiguous-paths --apis=${{ github.workspace }}/descriptions/monopad-ada-1.0/monopad-ada-1.0.yml
