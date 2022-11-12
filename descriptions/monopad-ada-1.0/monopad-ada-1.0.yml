@@ -3,10 +3,16 @@ info:
   title: Monopad API
   description: OpenAPI 3.0.0 definition for Monopad applications and remote modules (monopods). Any endpoint (except /node) may return 403 (Forbidden), 404 (Not found) or 500 (Internal server error) if the operation is blocked or not supported. 404 (Not found) may always be used instead of 403 (Forbidden) to hide access control rules to the client.
   version: "1.0"
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
   
   
 servers:
 - url: 'https://api.example.com'
+
+
+security: []
   
   
 tags:
@@ -25,6 +31,7 @@ paths:
     get:
       tags:
       - "node"
+      operationId: getNode
       summary: Returns the node information.
       description: Returns the node information. This endpoint must always return a successful response (2xx) with the required node fields to be accepted as a Monopad application and/or remote module (monopods).
       responses:
@@ -34,12 +41,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Node'
+        '404':
+          description: Node is not found.
                 
                 
   /node/configure:
     post:
       tags:
       - "node"
+      operationId: configureNode
       summary: Configures the node.
       description: Requests the node to reconfigure with the given configuration. Any omitted field should be treated as unchanged. The UUID of the node must not change during reconfiguration.
       requestBody:
@@ -64,6 +74,7 @@ paths:
     post:
       tags:
       - "node"
+      operationId: invoceNodeAction
       summary: Invokes a node function.
       description: Requests the node to execute a function with the provided arguments. Any result from the function is returned when the function completes.
       parameters:
@@ -94,6 +105,7 @@ paths:
     get:
       tags:
       - "node"
+      operationId: getNodeMetrics
       summary: Return node metrics.
       description: |
         Requests the node send metrics for its internal processes. Metric entities must use the following labels to be identified correctly: \
@@ -126,6 +138,7 @@ paths:
     get:
       tags:
       - "case"
+      operationId: getCases
       summary: Returns the available cases from the node.
       description: Returns the available cases from the node. The component hierarchy of the case is only required to show a depth up the given depth value (0 = do now show root component). If the depth is larger than zero then at least the root component must be shown. 
       parameters:
@@ -144,9 +157,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Case'
+        '404':
+          description: Cases are not supported for this node.
     post:
       tags:
       - "case"
+      operationId: addCase
       summary: Adds a case to the node.
       description: Attempts to add a case using the provided case configuration. If the case is added then the actual (possibly corrected) case is returned.
       requestBody:
@@ -171,6 +187,7 @@ paths:
     get:
       tags:
       - "case"
+      operationId: getCaseTemplates
       summary: Returns the available templates for cases.
       description: Returns an array of templates that are available to add as cases to the node.
       responses:
@@ -190,6 +207,7 @@ paths:
     get:
       tags:
       - "case"
+      operationId: getCase
       summary: Returns information of case with the given UUID or alias.
       description: Returns case information, and information about its component hierarchy. The component hierarchy of the case is only required to show a depth up the given depth value (0 = do now show root component). If the depth is larger than zero then at least the root component must be shown. 
       parameters:
@@ -218,6 +236,7 @@ paths:
     delete:
       tags:
       - "case"
+      operationId: deleteCase
       summary: Deletes a case with the given UUID or alias from the node.
       description: Attempts to delete a case. Any sucessful response (2xx) indicates that the delete operation was accepted.
       parameters:
@@ -241,6 +260,7 @@ paths:
     post:
       tags:
       - "case"
+      operationId: configureCase
       summary: Configures the case with the given UUID or alias.
       description: Requests the case to reconfigure with the given configuration. Any omitted field should be treated as unchanged. The UUID of the node must not change during reconfiguration. 
       parameters:
@@ -275,6 +295,7 @@ paths:
     post:
       tags:
       - "case"
+      operationId: invokeCaseAction
       summary: Invokes a case function.
       description: Requests the case to execute a function with the provided arguments. Any result from the function is returned when the function completes.
       parameters:
@@ -312,6 +333,7 @@ paths:
     get:
       tags:
       - "case"
+      operationId: persistCase
       summary: Persists the case with the given UUID or alias.
       description: Requests the node to persist the case with the given identity. Any sucessful response (2xx) indicates that the persist operation was accepted.
       parameters:
@@ -335,6 +357,7 @@ paths:
     get:
       tags:
       - "component"
+      operationId: getComponent
       summary: Returns information of the component with the given UUID or alias.
       description: Returns component information, and information about its hierarchy. The returned component information is only required to show a hierarchy up the given depth (0 = do not show children). If depth is larger than zero then at least the direct children of the component must be shown.
       parameters:
@@ -370,6 +393,7 @@ paths:
     post:
       tags:
       - "component"
+      operationId: addComponent
       summary: Adds a child to the component.
       description: Attempts to add a child to a component using the provided component configuration. If the component is added then the actual (possibly corrected) component is returned.
       parameters:
@@ -408,6 +432,7 @@ paths:
     delete:
       tags:
       - "component"
+      operationId: deleteComponent
       summary: Deletes a child with the given UUID or alias from its parent(s).
       description: Attempts to delete a child component. If there are multiple parents to the component then the default behavior is that the component is removed from all parents. Any sucessful response (2xx) indicates that the delete operation was accepted.
       parameters:
@@ -438,6 +463,7 @@ paths:
     get:
       tags:
       - "component"
+      operationId: activateComponent
       summary: Activates the component with the given UUID or alias.
       description: Requests the component with the given identity to activate. Any sucessful response (2xx) indicates that the activate operation was accepted.
       parameters:
@@ -468,6 +494,7 @@ paths:
     get:
       tags:
       - "component"
+      operationId: inactivateComponent
       summary: Inactivates the component with the given UUID or alias.
       description: Requests the component with the given identity to inactivate. Any sucessful response (2xx) indicates that the inactivate operation was accepted.
       parameters:
@@ -498,6 +525,7 @@ paths:
     get:
       tags:
       - "component"
+      operationId: getComponentPath
       summary: Returns the shortest path to the component with given UUID or alias.
       description: Returns an array of UUIDs that represents the shortest path from the root component to the component with the given identity, if present. The first UUID in the array is the root component and the last UUID is the requested component. 
       parameters:
@@ -532,6 +560,7 @@ paths:
     get:
       tags:
       - "component"
+      operationId: resetComponent
       summary: Resets the component with the given UUID or alias.
       description: Requests the component with the given identity to reset to its original state. Any sucessful response (2xx) indicates that the inactivate operation was accepted.
       parameters:
@@ -562,6 +591,7 @@ paths:
     get:
       tags:
       - "component"
+      operationId: getComponentTemplates
       summary: Returns the available templates for child components.
       description: Returns an array of templates that are available to add as children to the component with the given UUID or alias.
       parameters:
@@ -596,6 +626,7 @@ paths:
     post:
       tags:
       - "component"
+      operationId: configureComponent
       summary: Configures the component with the given UUID or alias.
       description: Requests the given component to reconfigure with the given configuration. Any omitted field should be treated as unchanged. The UUID of the component must not change during reconfiguration. 
       parameters:
@@ -637,6 +668,7 @@ paths:
     post:
       tags:
       - "relation"
+      operationId: addRelation
       summary: Adds a relation to the component with the given UUID or alias.
       description: Requests the given component to add a relation. If the relation is added then the actual (possibly corrected) relation is returned.
       parameters:
@@ -676,6 +708,7 @@ paths:
     delete:
       tags:
       - "relation"
+      operationId: deleteRelation
       summary: Deletes a relation with the given UUID or alias from a component.
       description: Attempts to delete a relation. Any sucessful response (2xx) indicates that the delete operation was accepted.
       parameters:
@@ -713,6 +746,7 @@ paths:
     post:
       tags:
       - "component"
+      operationId: invokeComponentAction
       summary: Invokes a component function.
       description: Requests the component to execute a function with the provided arguments. Any result from the function is returned when the function completes.
       parameters:
@@ -757,6 +791,7 @@ paths:
     get:
       tags:
       - "component"
+      operationId: getComponentView
       summary: Sends a get call to the component server.
       description: Sends a get call to the underlying server for the component with the given UUID or alias.
       parameters:
@@ -784,6 +819,7 @@ paths:
     post:
       tags:
       - "component"
+      operationId: postComponentView
       summary: Sends a post call to the component server.
       description: Sends a post call to the underlying server for the component with the given UUID or alias.
       parameters:
@@ -816,6 +852,7 @@ paths:
     put:
       tags:
       - "component"
+      operationId: putComponentView
       summary: Sends a put call to the component server.
       description: Sends a put call to the underlying server for the component with the given UUID or alias.
       parameters:
@@ -848,6 +885,7 @@ paths:
     delete:
       tags:
       - "component"
+      operationId: deleteComponentView
       summary: Sends a delete call to the component server.
       description: Sends a delete call to the underlying server for the component with the given UUID or alias. Any sucessful response (2xx) indicates that the delete operation was accepted.
       parameters:
@@ -1279,7 +1317,7 @@ components:
               type: string
             major:
               type: integer
-              enum: [3]
+              enum: [1]
             minor:
               type: integer
               enum: [0]
