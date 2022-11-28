@@ -1041,9 +1041,9 @@ components:
         **interval** - Value is allowed only if it is a number within the given interval. Contraint value is object containing properties "min", "max" and "open". Min and max specifies the endpoints of the interval and open specifies whether the interval is open (true) or closed (false).
       type: object
       required:
-        - name
+        - type
       properties:
-        name:
+        type:
           type: string
           enum: 
             - "any"
@@ -1371,6 +1371,10 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/ComponentConfiguration'
+            relations:
+              type: array
+              items:
+                $ref: '#/components/schemas/Relation'
                 
                 
     CaseTemplate:
