@@ -996,19 +996,26 @@ components:
             uuid: 
               $ref: '#/components/schemas/UUID'
               
-    Typed:
+    Instance:
       description: A typed entity.
       type: object
       properties:
-        type:
+        type:  
           description: The entity type.
           type: string
-        factory:
-          description: A preferred factory for which the type is defined.
-          type: string
-        dro:
-          description: The dependency-resolution order. If multiple typed entity should be created then they must be created in the ascending order in respect to the dependency-resolution order.
-          type: integer
+              
+    Typed:
+      description: An entity type description.
+      allOf:
+        - $ref: '#/components/schemas/Instance'
+        - type: object
+          properties:
+            factory:
+              description: A preferred factory for which the type is defined.
+              type: string
+            dro:
+              description: The dependency-resolution order. If multiple typed entity should be created then they must be created in the ascending order in respect to the dependency-resolution order.
+              type: integer
           
     Persistable:
       description: A living that may or may not be persisted to a non-living medium.
@@ -1252,6 +1259,7 @@ components:
       - uuid
       allOf:
         - $ref: '#/components/schemas/Identifiable'
+        - $ref: '#/components/schemas/Instance'
         - $ref: '#/components/schemas/Persistable'
         - $ref: '#/components/schemas/Configurable'
         - $ref: '#/components/schemas/Functional'
@@ -1283,6 +1291,7 @@ components:
       - uuid
       allOf:
         - $ref: '#/components/schemas/Identifiable'
+        - $ref: '#/components/schemas/Instance'
         - $ref: '#/components/schemas/Persistable'
         - $ref: '#/components/schemas/Configurable'
         - $ref: '#/components/schemas/Functional'
