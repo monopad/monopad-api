@@ -43,10 +43,7 @@ paths:
                 $ref: '#/components/schemas/Node'
         '404':
           description: Node is not found.
-                
-                
-  /node/configure:
-    post:
+    put:
       tags:
       - "node"
       operationId: configureNode
@@ -254,10 +251,7 @@ paths:
           description: Not found. May be used if the case is not found.
         '403':
           description: Forbidden. May be used if adding a case is not allowed.
-   
-                
-  /cases/{case}/configure:
-    post:
+    put:
       tags:
       - "case"
       operationId: configureCase
@@ -353,7 +347,7 @@ paths:
           description: Forbidden. May be used if the configuration is not allowed.
           
           
-  /cases/{case}/{component}:
+  /components/{case}/{component}:
     get:
       tags:
       - "component"
@@ -457,173 +451,7 @@ paths:
           description: Not found. May be used if the component is not found.
         '403':
           description: Forbidden. May be used if adding a component is not allowed.
-          
-          
-  /cases/{case}/{component}/activate:
-    get:
-      tags:
-      - "component"
-      operationId: activateComponent
-      summary: Activates the component with the given UUID or alias.
-      description: Requests the component with the given identity to activate. Any sucessful response (2xx) indicates that the activate operation was accepted.
-      parameters:
-        - in: path
-          name: case
-          required: true
-          schema:
-            oneOf:
-             - $ref: '#/components/schemas/Alias'
-             - $ref: '#/components/schemas/UUID'
-        - in: path
-          name: component
-          required: true
-          schema:
-            oneOf:
-             - $ref: '#/components/schemas/Alias'
-             - $ref: '#/components/schemas/UUID'
-      responses:
-        '200':
-          description: OK
-        '404':
-          description: Not found. May be used if the component is not found.
-        '403':
-          description: Forbidden. May be used if activating the component is not allowed.
-          
-          
-  /cases/{case}/{component}/inactivate:
-    get:
-      tags:
-      - "component"
-      operationId: inactivateComponent
-      summary: Inactivates the component with the given UUID or alias.
-      description: Requests the component with the given identity to inactivate. Any sucessful response (2xx) indicates that the inactivate operation was accepted.
-      parameters:
-        - in: path
-          name: case
-          required: true
-          schema:
-            oneOf:
-             - $ref: '#/components/schemas/Alias'
-             - $ref: '#/components/schemas/UUID'
-        - in: path
-          name: component
-          required: true
-          schema:
-            oneOf:
-             - $ref: '#/components/schemas/Alias'
-             - $ref: '#/components/schemas/UUID'
-      responses:
-        '200':
-          description: OK
-        '404':
-          description: Not found. May be used if the component is not found.
-        '403':
-          description: Forbidden. May be used if inactivating the component is not allowed.
-          
-          
-  /cases/{case}/{component}/path:
-    get:
-      tags:
-      - "component"
-      operationId: getComponentPath
-      summary: Returns the shortest path to the component with given UUID or alias.
-      description: Returns an array of UUIDs that represents the shortest path from the root component to the component with the given identity, if present. The first UUID in the array is the root component and the last UUID is the requested component. 
-      parameters:
-        - in: path
-          name: case
-          required: true
-          schema:
-            oneOf:
-             - $ref: '#/components/schemas/Alias'
-             - $ref: '#/components/schemas/UUID'
-        - in: path
-          name: component
-          required: true
-          schema:
-            oneOf:
-             - $ref: '#/components/schemas/Alias'
-             - $ref: '#/components/schemas/UUID'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UUID'
-        '404':
-          description: Not found. May be used if the component is not found.
-          
-          
-  /cases/{case}/{component}/reset:
-    get:
-      tags:
-      - "component"
-      operationId: resetComponent
-      summary: Resets the component with the given UUID or alias.
-      description: Requests the component with the given identity to reset to its original state. Any sucessful response (2xx) indicates that the inactivate operation was accepted.
-      parameters:
-        - in: path
-          name: case
-          required: true
-          schema:
-            oneOf:
-             - $ref: '#/components/schemas/Alias'
-             - $ref: '#/components/schemas/UUID'
-        - in: path
-          name: component
-          required: true
-          schema:
-            oneOf:
-             - $ref: '#/components/schemas/Alias'
-             - $ref: '#/components/schemas/UUID'
-      responses:
-        '200':
-          description: OK
-        '404':
-          description: Not found. May be used if the component is not found.
-        '403':
-          description: Forbidden. May be used if resetting the component is not allowed.
-          
-          
-  /cases/{case}/{component}/templates:
-    get:
-      tags:
-      - "component"
-      operationId: getComponentTemplates
-      summary: Returns the available templates for child components.
-      description: Returns an array of templates that are available to add as children to the component with the given UUID or alias.
-      parameters:
-        - in: path
-          name: case
-          required: true
-          schema:
-            oneOf:
-             - $ref: '#/components/schemas/Alias'
-             - $ref: '#/components/schemas/UUID'
-        - in: path
-          name: component
-          required: true
-          schema:
-            oneOf:
-             - $ref: '#/components/schemas/Alias'
-             - $ref: '#/components/schemas/UUID'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ComponentTemplate'
-        '404':
-          description: Not found. May be used if the component is not found, or if no templates are available.
-          
-          
-  /cases/{case}/{component}/configure:
-    post:
+    put:
       tags:
       - "component"
       operationId: configureComponent
@@ -663,14 +491,14 @@ paths:
         '403':
           description: Forbidden. May be used if the configuration is not allowed.
           
-  
-  /cases/{case}/{component}/relate:
-    post:
+          
+  /components/{case}/{component}/activate:
+    get:
       tags:
-      - "relation"
-      operationId: addRelation
-      summary: Adds a relation to the component with the given UUID or alias.
-      description: Requests the given component to add a relation. If the relation is added then the actual (possibly corrected) relation is returned.
+      - "component"
+      operationId: activateComponent
+      summary: Activates the component with the given UUID or alias.
+      description: Requests the component with the given identity to activate. Any sucessful response (2xx) indicates that the activate operation was accepted.
       parameters:
         - in: path
           name: case
@@ -686,31 +514,88 @@ paths:
             oneOf:
              - $ref: '#/components/schemas/Alias'
              - $ref: '#/components/schemas/UUID'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Relation'
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Not found. May be used if the component is not found.
+        '403':
+          description: Forbidden. May be used if activating the component is not allowed.
+          
+          
+  /components/{case}/{component}/inactivate:
+    get:
+      tags:
+      - "component"
+      operationId: inactivateComponent
+      summary: Inactivates the component with the given UUID or alias.
+      description: Requests the component with the given identity to inactivate. Any sucessful response (2xx) indicates that the inactivate operation was accepted.
+      parameters:
+        - in: path
+          name: case
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+        - in: path
+          name: component
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Not found. May be used if the component is not found.
+        '403':
+          description: Forbidden. May be used if inactivating the component is not allowed.
+          
+          
+  /components/{case}/{component}/path:
+    get:
+      tags:
+      - "component"
+      operationId: getComponentPath
+      summary: Returns the shortest path to the component with given UUID or alias.
+      description: Returns an array of UUIDs that represents the shortest path from the root component to the component with the given identity, if present. The first UUID in the array is the root component and the last UUID is the requested component. 
+      parameters:
+        - in: path
+          name: case
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+        - in: path
+          name: component
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Relation'
+                type: array
+                items:
+                  $ref: '#/components/schemas/UUID'
         '404':
           description: Not found. May be used if the component is not found.
-        '403':
-          description: Forbidden. May be used if adding the relation is not allowed.
           
           
-  /cases/{case}/{component}/unrelate/{relation}:
-    delete:
+  /components/{case}/{component}/reset:
+    get:
       tags:
-      - "relation"
-      operationId: deleteRelation
-      summary: Deletes a relation with the given UUID or alias from a component.
-      description: Attempts to delete a relation. Any sucessful response (2xx) indicates that the delete operation was accepted.
+      - "component"
+      operationId: resetComponent
+      summary: Resets the component with the given UUID or alias.
+      description: Requests the component with the given identity to reset to its original state. Any sucessful response (2xx) indicates that the inactivate operation was accepted.
       parameters:
         - in: path
           name: case
@@ -726,8 +611,32 @@ paths:
             oneOf:
              - $ref: '#/components/schemas/Alias'
              - $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Not found. May be used if the component is not found.
+        '403':
+          description: Forbidden. May be used if resetting the component is not allowed.
+          
+          
+  /components/{case}/{component}/templates:
+    get:
+      tags:
+      - "component"
+      operationId: getComponentTemplates
+      summary: Returns the available templates for child components.
+      description: Returns an array of templates that are available to add as children to the component with the given UUID or alias.
+      parameters:
         - in: path
-          name: relation
+          name: case
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+        - in: path
+          name: component
           required: true
           schema:
             oneOf:
@@ -736,13 +645,17 @@ paths:
       responses:
         '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ComponentTemplate'
         '404':
-          description: Not found. May be used if the relation is not found.
-        '403':
-          description: Forbidden. May be used if removing the relation is not allowed.
+          description: Not found. May be used if the component is not found, or if no templates are available.
           
-  
-  /cases/{case}/{component}/invoke/{action}:
+          
+  /components/{case}/{component}/invoke/{action}:
     post:
       tags:
       - "component"
@@ -787,7 +700,7 @@ paths:
           description: Forbidden. May be used if invokation is not allowed.
           
           
-  /cases/{case}/{component}/view/**:
+  /components/{case}/{component}/view/**:
     get:
       tags:
       - "component"
@@ -911,6 +824,84 @@ paths:
         '403':
           description: Forbidden. May be used if post call is not allowed.
     
+    
+  /relations/{case}/{component}:
+    post:
+      tags:
+      - "relation"
+      operationId: addRelation
+      summary: Adds a relation to the component with the given UUID or alias.
+      description: Requests the given component to add a relation. If the relation is added then the actual (possibly corrected) relation is returned.
+      parameters:
+        - in: path
+          name: case
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+        - in: path
+          name: component
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Relation'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Relation'
+        '404':
+          description: Not found. May be used if the component is not found.
+        '403':
+          description: Forbidden. May be used if adding the relation is not allowed.
+          
+          
+  /relations/{case}/{component}/{relation}:
+    delete:
+      tags:
+      - "relation"
+      operationId: deleteRelation
+      summary: Deletes a relation with the given UUID or alias from a component.
+      description: Attempts to delete a relation. Any sucessful response (2xx) indicates that the delete operation was accepted.
+      parameters:
+        - in: path
+          name: case
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+        - in: path
+          name: component
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+        - in: path
+          name: relation
+          required: true
+          schema:
+            oneOf:
+             - $ref: '#/components/schemas/Alias'
+             - $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Not found. May be used if the relation is not found.
+        '403':
+          description: Forbidden. May be used if removing the relation is not allowed.
+          
           
           
 components:
