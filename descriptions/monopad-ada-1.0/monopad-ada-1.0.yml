@@ -987,7 +987,7 @@ components:
             uuid: 
               $ref: '#/components/schemas/UUID'
               
-    Instance:
+    Typed:
       description: A typed entity.
       type: object
       properties:
@@ -995,10 +995,10 @@ components:
           description: The entity type.
           type: string
               
-    Typed:
+    Instantiable:
       description: An entity type description.
       allOf:
-        - $ref: '#/components/schemas/Instance'
+        - $ref: '#/components/schemas/Typed'
         - type: object
           properties:
             factory:
@@ -1250,7 +1250,7 @@ components:
       - uuid
       allOf:
         - $ref: '#/components/schemas/Identifiable'
-        - $ref: '#/components/schemas/Instance'
+        - $ref: '#/components/schemas/Typed'
         - $ref: '#/components/schemas/Persistable'
         - $ref: '#/components/schemas/Configurable'
         - $ref: '#/components/schemas/Functional'
@@ -1282,7 +1282,7 @@ components:
       - uuid
       allOf:
         - $ref: '#/components/schemas/Identifiable'
-        - $ref: '#/components/schemas/Instance'
+        - $ref: '#/components/schemas/Typed'
         - $ref: '#/components/schemas/Persistable'
         - $ref: '#/components/schemas/Configurable'
         - $ref: '#/components/schemas/Functional'
@@ -1326,7 +1326,7 @@ components:
     ComponentConfiguration:
       allOf:
         - $ref: '#/components/schemas/Identifiable'
-        - $ref: '#/components/schemas/Typed'
+        - $ref: '#/components/schemas/Instantiable'
         - $ref: '#/components/schemas/Configured'
         - $ref: '#/components/schemas/Graphical'
         - type: object
@@ -1350,7 +1350,7 @@ components:
     CaseConfiguration:
       allOf:
         - $ref: '#/components/schemas/Identifiable'
-        - $ref: '#/components/schemas/Typed'
+        - $ref: '#/components/schemas/Instantiable'
         - $ref: '#/components/schemas/Configured'
         - type: object
           properties:
@@ -1361,7 +1361,7 @@ components:
     ComponentTemplate:
       allOf:
         - $ref: '#/components/schemas/Summarized'
-        - $ref: '#/components/schemas/Typed'
+        - $ref: '#/components/schemas/Instantiable'
         - $ref: '#/components/schemas/Configurable'
         - type: object
           properties:
@@ -1380,7 +1380,7 @@ components:
     CaseTemplate:
       allOf:
         - $ref: '#/components/schemas/Summarized'
-        - $ref: '#/components/schemas/Typed'
+        - $ref: '#/components/schemas/Instantiable'
         - $ref: '#/components/schemas/Configurable'
         - type: object
           properties:
@@ -1403,3 +1403,4 @@ components:
               description: 'Base64 encoded binary content'
               format: 'base64'
               type: string
+
