@@ -951,8 +951,7 @@ paths:
         '404':
           description: Not found. May be used if alarm acknowledging is not supported.
         '403':
-          description: Forbidden. May be used if acknowledge is not allowed.
-      
+          description: Forbidden. May be used if acknowledge is not allowed.    
           
           
   /metrics:
@@ -987,8 +986,7 @@ paths:
         '403':
           description: Forbidden. May be used if retreiving the metrics is not allowed.
           
-          
-          
+                  
 components:
   schemas:
     Primitive:
@@ -999,12 +997,10 @@ components:
       type: string
       pattern: "^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$"
       
-      
     Alias:
       description: An alias for an entity. The alias acts as a complement to a UUID to simplify frequent interaction with an entity.
       type: string
-      pattern: "^[\\w-\\.]+$"
-      
+      pattern: "^[\\w\\.-]+$"
       
     Description:
       description: A textual description of an entity used to clarify its behavior. The description may contain content (e.g. using media type text/plain, text/markdown, ...) or point to an external resource using media type text/x-uri (single URI) or text/uri-list (list of URIs).
@@ -1017,13 +1013,11 @@ components:
         mime: 
           type: string
           description: Default MIME is text/plain
-          
-          
+           
     Property:
       description: A property name. The convention is to use Snake case (stylized as snake_case) due to fast eye tracking (Sharif B., & Maletic J. I. (2010)) and simple word parsing. 
       type: string
-      pattern: "^[a-zA-Z_][\\w\\.\\-]*$"
-      
+      pattern: "^[a-zA-Z_][\\w\\.-]*$"
       
     Label:
       description: A label used to associate a human and machine readable property with some value.
@@ -1038,7 +1032,6 @@ components:
         value:
           $ref: '#/components/schemas/Primitive'
           
-          
     Labeled:
       description: An entity associated with a set of labels.
       type: object
@@ -1047,7 +1040,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Label'
-            
             
     Summarized:
       description: A labeled entity associated with an optional name, alias and description.
@@ -1061,8 +1053,7 @@ components:
               $ref: '#/components/schemas/Alias'
             description:
               $ref: '#/components/schemas/Description'
-              
-              
+               
     Identifiable:
       description: A living (or peristed) summarized entity identified with a UUID.
       allOf:
@@ -1103,8 +1094,7 @@ components:
         transient:
           description: Specifies whether the persistable entity is transient and therefore cannot be persisted or provide a configuration.
           type: boolean
-              
-              
+                 
     Constraint:
       description: |
         A constraint on a value. The "value" field of the constraint provides additional information of the constraint and depends on the type: \
@@ -1145,7 +1135,6 @@ components:
             - "interval"
         value: {}
         
-        
     Configured:
       description: A configued entity.
       type: object
@@ -1155,8 +1144,7 @@ components:
           description: Key must be a valid Property.
           additionalProperties:
                 $ref: '#/components/schemas/Primitive'
-                
-                
+                  
     Configurable:
       description: A configurable entity.
       allOf:
@@ -1173,8 +1161,7 @@ components:
               type: object
               additionalProperties:
                     $ref: '#/components/schemas/Description'
-                    
-                    
+                          
     Action:
       description: An action that can be invoked on a living entity. The "returns" constraint provides information on the return value of the action (if any).
       type: object
@@ -1202,7 +1189,6 @@ components:
               constraint: 
                 $ref: '#/components/schemas/Constraint'
                 
-                
     Functional:
       description: A living entity with actions.
       type: object
@@ -1212,17 +1198,15 @@ components:
           items:
             $ref: '#/components/schemas/Action'
             
-            
     Layout:
-      required:
-      - type
       allOf:
         - $ref: '#/components/schemas/Configurable'
         - type: object
+          required:
+          - type
           properties:
             type:
               type: string
-              
               
     Graphical:
       type: object
@@ -1235,7 +1219,6 @@ components:
         layout:
           $ref: '#/components/schemas/Layout'
           
-          
     Bridge:
       description: |
         A bridge used to transport data items to/from an entity. Bridge properties is associated to the bridge type. Required values are: \
@@ -1245,13 +1228,13 @@ components:
         **tcp** - **host**: ip/hostname (string), **port**: tcp port (integer 0-65535). \
         **ws** - **url**: WebSocket URL (string). \
         **wss** - **url**: WebSocket Secure URL (string).
-      required:
-      - properties
-      - type
-      - format
       allOf:
         - $ref: '#/components/schemas/Configured'
         - type: object
+          required:
+          - properties
+          - type
+          - format
           properties:
             type: 
               type: string
@@ -1269,8 +1252,7 @@ components:
                   - protobuf
                   - xml
                   - asn1
-                  
-                  
+                     
     Port:
       allOf:
         - $ref: '#/components/schemas/Identifiable'
@@ -1287,15 +1269,14 @@ components:
               items:
                 type: string
                 
-                
     Relation:
-      required:
-      - type
-      - originator
-      - destination
       allOf:
         - $ref: '#/components/schemas/Identifiable'
         - type: object
+          required:
+          - type
+          - originator
+          - destination
           properties:
             type:
               type: string
@@ -1329,10 +1310,7 @@ components:
                 port:
                   $ref: '#/components/schemas/UUID'
                   
-                  
     Component:
-      required:
-      - uuid
       allOf:
         - $ref: '#/components/schemas/Identifiable'
         - $ref: '#/components/schemas/Typed'
@@ -1341,6 +1319,8 @@ components:
         - $ref: '#/components/schemas/Functional'
         - $ref: '#/components/schemas/Graphical'
         - type: object
+          required:
+          - uuid
           properties:
             active:
               type: boolean
@@ -1361,10 +1341,7 @@ components:
               items:
                 $ref: '#/components/schemas/Relation'
                 
-                
     Case:
-      required:
-      - uuid
       allOf:
         - $ref: '#/components/schemas/Identifiable'
         - $ref: '#/components/schemas/Typed'
@@ -1372,6 +1349,8 @@ components:
         - $ref: '#/components/schemas/Configurable'
         - $ref: '#/components/schemas/Functional'
         - type: object
+          required:
+          - uuid
           properties:
             root:
               $ref: '#/components/schemas/Component'
@@ -1380,16 +1359,14 @@ components:
               items:
                 $ref: '#/components/schemas/Bridge'
                 
-                
     Node:
-      required:
-      - uuid
       allOf:
         - $ref: '#/components/schemas/Identifiable'
         - $ref: '#/components/schemas/Configurable'
         - $ref: '#/components/schemas/Functional'
         - type: object
           required:
+            - uuid
             - api
             - system
             - major
@@ -1406,7 +1383,6 @@ components:
             minor:
               type: integer
               enum: [0]
-              
               
     ComponentConfiguration:
       allOf:
@@ -1430,8 +1406,7 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/Relation'
-                
-                
+                 
     CaseConfiguration:
       allOf:
         - $ref: '#/components/schemas/Identifiable'
@@ -1441,7 +1416,6 @@ components:
           properties:
             root:
               $ref: '#/components/schemas/ComponentConfiguration'
-              
               
     ComponentTemplate:
       allOf:
@@ -1461,7 +1435,6 @@ components:
               items:
                 $ref: '#/components/schemas/Relation'
                 
-                
     CaseTemplate:
       allOf:
         - $ref: '#/components/schemas/Summarized'
@@ -1473,7 +1446,6 @@ components:
               type: string
             root:
               $ref: '#/components/schemas/ComponentConfiguration'
-              
               
     Alarm:
       description: An alarm entity used to signal exceptions to the user.
@@ -1526,7 +1498,6 @@ components:
           description: 'The acknowlege comment of the alarm. If the alarm has not been acknowledged then this field must be excluded.'
           type: string
             
-              
     DataItem:
       allOf:
         - $ref: '#/components/schemas/Labeled'
