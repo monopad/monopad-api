@@ -2,7 +2,7 @@
 [![Actions Status](https://github.com/monopad/monopad-api/workflows/validate-openapi/badge.svg)](https://github.com/monopad/monopad-api/actions)
 # Monopad's REST API OpenAPI Description
 
-This repository contains [OpenAPI](https://www.openapis.org/) descriptions for Monopad's REST API.
+This repository contains [OpenAPI](https://www.openapis.org/) descriptions for Monopad's REST API. A visualization of the latest description can be found [here](https://petstore.swagger.io/?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmonopad%2Fmonopad-api%2Fmain%2Fdescriptions%2Fmonopad-ada-1.0%2Fmonopad-ada-1.0.yml).
 
 ## What is OpenAPI?
 
