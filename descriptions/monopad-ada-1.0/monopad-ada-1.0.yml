@@ -1312,6 +1312,7 @@ components:
                   
     Component:
       allOf:
+        - required: [uuid]
         - $ref: '#/components/schemas/Identifiable'
         - $ref: '#/components/schemas/Typed'
         - $ref: '#/components/schemas/Persistable'
@@ -1319,8 +1320,6 @@ components:
         - $ref: '#/components/schemas/Functional'
         - $ref: '#/components/schemas/Graphical'
         - type: object
-          required:
-          - uuid
           properties:
             active:
               type: boolean
@@ -1343,14 +1342,13 @@ components:
                 
     Case:
       allOf:
+        - required: [uuid]
         - $ref: '#/components/schemas/Identifiable'
         - $ref: '#/components/schemas/Typed'
         - $ref: '#/components/schemas/Persistable'
         - $ref: '#/components/schemas/Configurable'
         - $ref: '#/components/schemas/Functional'
         - type: object
-          required:
-          - uuid
           properties:
             root:
               $ref: '#/components/schemas/Component'
@@ -1361,12 +1359,12 @@ components:
                 
     Node:
       allOf:
+        - required: [uuid]
         - $ref: '#/components/schemas/Identifiable'
         - $ref: '#/components/schemas/Configurable'
         - $ref: '#/components/schemas/Functional'
         - type: object
           required:
-            - uuid
             - api
             - system
             - major
