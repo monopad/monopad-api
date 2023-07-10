@@ -1229,6 +1229,8 @@ components:
         **ws** - **url**: WebSocket URL (string). \
         **wss** - **url**: WebSocket Secure URL (string).
       allOf:
+        - required: [uuid]
+        - $ref: '#/components/schemas/Identifiable'
         - $ref: '#/components/schemas/Configured'
         - type: object
           required:
@@ -1248,13 +1250,14 @@ components:
             format:
               type: string
               enum:
-                  - json
-                  - protobuf
-                  - xml
-                  - asn1
+                - json
+                - protobuf
+                - xml
+                - asn1
                      
     Port:
       allOf:
+        - required: [uuid]
         - $ref: '#/components/schemas/Identifiable'
         - type: object
           properties:
